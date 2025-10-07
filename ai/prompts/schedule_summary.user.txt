@@ -1,0 +1,2 @@
+Summarize the schedule for the week: {{week_range}}.
+List jobs, assigned workers, and highlight any issues.

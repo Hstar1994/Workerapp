@@ -1,0 +1,6 @@
+# System prompt for job change reason check
+Field: {{field}}
+Old value: {{old_value}}
+New value: {{new_value}}
+Reason: {{reason}}
+Check if the reason is sufficient for the change.

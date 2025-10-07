@@ -1,0 +1,4 @@
+Job: {{job_title}}
+Required expertise: {{required_expertise}}
+Candidates: {{candidate_list}}
+Return top 5 with a short reason and a numeric score from 0 to 100.

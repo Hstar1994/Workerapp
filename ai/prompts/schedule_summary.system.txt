@@ -1,0 +1,3 @@
+# System prompt for schedule summary
+Summarize the schedule for the week: {{week_range}}.
+Include jobs, workers, and any conflicts.
