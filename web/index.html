@@ -1,14 +1,75 @@
 ﻿<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Worker App</title></head>
-  <body style="font-family: system-ui; padding:24px">
-    <h1>It works</h1>
-    <p>Docker is serving this page from C:\Worker App1\web</p>
-    <p>API health: <span id="h">checking...</span></p>
-    <script>
-      fetch("http://localhost:8000/healthz").then(r=>r.json()).then(d=>{
-        document.getElementById("h").textContent = d.ok ? "ok" : "not ok";
-      }).catch(()=>{ document.getElementById("h").textContent = "not reachable"; });
-    </script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Worker App POC</title>
+  <style>
+    :root { --fg:#0f172a; --muted:#64748b; --ok:#16a34a; --bad:#dc2626; --card:#f1f5f9; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #fff; color: var(--fg); }
+    header { padding: 28px 20px; background: linear-gradient(120deg,#dbeafe,#f1f5f9); border-bottom: 1px solid #e2e8f0; }
+    h1 { margin: 0 0 6px; font-size: 26px; }
+    p { margin: 0; color: var(--muted); }
+    main { padding: 24px; max-width: 900px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; }
+    .row { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+    .pill { padding: 6px 10px; border-radius: 999px; font-size: 13px; }
+    .ok { background: #dcfce7; color: var(--ok); }
+    .bad { background: #fee2e2; color: var(--bad); }
+    code { background: #0f172a10; padding: 2px 6px; border-radius: 6px; }
+    footer { padding: 16px 20px; color: var(--muted); text-align: center; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Worker App is running</h1>
+    <p>Docker compose is serving this homepage. The API health below proves the backend is reachable.</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <strong>API health</strong>
+      <div id="health" class="row">
+        <span class="pill bad">checking...</span>
+        <span id="details" class="muted"></span>
+      </div>
+
+      <div style="margin-top:14px; font-size:14px; color:var(--muted)">
+        Try hitting <code>/healthz</code> directly:
+        <a href="http://localhost:8000/healthz" target="_blank" rel="noreferrer">http://localhost:8000/healthz</a>
+      </div>
+    </div>
+
+    <div style="margin-top:18px; font-size:14px; color:var(--muted)">
+      Next steps: add a Today list and a Weekly schedule, then wire to real endpoints.
+    </div>
+  </main>
+
+  <footer>
+    Worker App POC, local environment
+  </footer>
+
+  <script>
+    const pill = document.querySelector("#health .pill");
+    const details = document.getElementById("details");
+    fetch("http://localhost:8000/healthz")
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.ok) {
+          pill.textContent = "ok";
+          pill.classList.remove("bad");
+          pill.classList.add("ok");
+          details.textContent = "backend reachable";
+        } else {
+          pill.textContent = "not ok";
+        }
+      })
+      .catch(() => {
+        pill.textContent = "api not reachable";
+      });
+  </script>
+</body>
 </html>
