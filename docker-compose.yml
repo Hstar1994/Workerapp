@@ -1,0 +1,16 @@
+﻿version: "3.9"
+services:
+  web:
+    image: nginx:1.27-alpine
+    container_name: workerapp_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+
+  api:
+    build:
+      context: ./services/api
+    container_name: workerapp_api
+    ports:
+      - "8000:8000"

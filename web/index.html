@@ -1,0 +1,14 @@
+﻿<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Worker App</title></head>
+  <body style="font-family: system-ui; padding:24px">
+    <h1>It works</h1>
+    <p>Docker is serving this page from C:\Worker App1\web</p>
+    <p>API health: <span id="h">checking...</span></p>
+    <script>
+      fetch("http://localhost:8000/healthz").then(r=>r.json()).then(d=>{
+        document.getElementById("h").textContent = d.ok ? "ok" : "not ok";
+      }).catch(()=>{ document.getElementById("h").textContent = "not reachable"; });
+    </script>
+  </body>
+</html>
