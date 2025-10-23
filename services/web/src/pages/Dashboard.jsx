@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -65,8 +67,14 @@ export default function Dashboard() {
             <li>All data access</li>
             <li>Role assignments</li>
           </ul>
-          <button style={{ backgroundColor: '#0066cc', color: 'white', padding: '8px 16px', border: 'none' }}>
-            Manage Users
+          <button
+            style={{ backgroundColor: '#0066cc', color: 'white', padding: '8px 16px', border: 'none' }}
+            onClick={() => {
+              console.log('Manage Users button clicked');
+              navigate('/user-management');
+            }}
+          >
+            Manage Users NOW
           </button>
         </section>
       )}
