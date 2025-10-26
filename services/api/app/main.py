@@ -1,7 +1,7 @@
 ﻿
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth
+from app.routers import auth, users
 
 app = FastAPI(title="Worker App API", version="0.1")
 
@@ -21,3 +21,4 @@ def healthz():
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
