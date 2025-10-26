@@ -26,6 +26,8 @@ class LoginResponse(BaseModel):
     access_token: str
     role: str
     name: str
+    user_id: int
+    email: str
 
 
 class MeResponse(BaseModel):
@@ -67,22 +69,33 @@ def login(data: LoginRequest):
         user = db.query(User).filter(User.email == data.email).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-        # Return a simple demo token based on role (keeps compatibility with frontend demo tokens)
-        return {"access_token": f"demo-token-for-{user.role}", "role": user.role, "name": user.name}
+        # Return a user-specific demo token that includes the user ID
+        return {
+            "access_token": f"demo-token-{user.id}-{user.role}",
+            "role": user.role,
+            "name": user.name,
+            "user_id": user.id,
+            "email": user.email
+        }
     finally:
         db.close()
 
 
 def get_current_user(authorization: str | None = Header(default=None)):
-    token = authorization or "demo-token-for-worker"
-    if not token.startswith("demo-token-for-"):
+    token = authorization or "demo-token-1-admin"
+    if not token.startswith("demo-token-"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    role = token.replace("demo-token-for-", "")
+    
+    # Extract user ID from token format: demo-token-{id}-{role}
+    try:
+        parts = token.replace("demo-token-", "").split("-")
+        user_id = int(parts[0])
+    except (ValueError, IndexError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")
 
     db = SessionLocal()
     try:
-        # Return the first active user with that role (sufficient for demo/testing)
-        user = db.query(User).filter(User.role == role, User.is_active == True).first()
+        user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token/user")
         return {"id": user.id, "name": user.name, "role": user.role, "email": user.email}

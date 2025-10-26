@@ -77,6 +77,8 @@ const UserManagement = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         localStorage.removeItem('name');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('email');
         navigate('/login');
     };
 
@@ -189,7 +191,7 @@ const UserManagement = () => {
                                 <td style={styles.td}>{user.id}</td>
                                 <td style={styles.td}>
                                     <strong>{user.name}</strong>
-                                    {user.id === currentUser?.id && (
+                                    {user.id === parseInt(localStorage.getItem('userId')) && (
                                         <span style={styles.youBadge}> (You)</span>
                                     )}
                                 </td>

@@ -37,7 +37,7 @@ def get_all_users(current_user: dict = Depends(get_current_user)):
     
     db = SessionLocal()
     try:
-        users = db.query(User).order_by(User.created_at.desc()).all()
+        users = db.query(User).order_by(User.id.asc()).all()
         return users
     finally:
         db.close()

@@ -28,6 +28,8 @@ export default function Login() {
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('role', data.role);
       localStorage.setItem('name', data.name);
+      localStorage.setItem('userId', data.user_id);
+      localStorage.setItem('email', data.email);
       // Redirect to dashboard
       window.location.href = '/dashboard';
     } catch (err) {
