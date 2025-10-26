@@ -2,25 +2,31 @@ from fastapi import APIRouter, HTTPException, status, Depends, Header
 from pydantic import BaseModel
 from typing import Optional
 
+from app.db import SessionLocal, engine, Base
+from app.models.models import User
+
 router = APIRouter()
 
-# Demo users for stub
-SEED_USERS = {
-    "admin@example.com": {"id": 1, "name": "Admin", "role": "admin"},
-    "manager@example.com": {"id": 2, "name": "Manager", "role": "manager"},
-    "worker1@example.com": {"id": 3, "name": "Worker One", "role": "worker"},
-    "worker2@example.com": {"id": 4, "name": "Worker Two", "role": "worker"},
-    "worker3@example.com": {"id": 5, "name": "Worker Three", "role": "worker"},
-}
+# Seed data we'll ensure exists in the DB for testing
+_SEED_USERS = [
+    {"email": "admin@example.com", "name": "Admin", "role": "admin"},
+    {"email": "manager@example.com", "name": "Manager", "role": "manager"},
+    {"email": "worker1@example.com", "name": "Worker One", "role": "worker"},
+    {"email": "worker2@example.com", "name": "Worker Two", "role": "worker"},
+    {"email": "worker3@example.com", "name": "Worker Three", "role": "worker"},
+]
+
 
 class LoginRequest(BaseModel):
     email: str
     password: Optional[str] = None  # ignored in stub
 
+
 class LoginResponse(BaseModel):
     access_token: str
     role: str
     name: str
+
 
 class MeResponse(BaseModel):
     id: int
@@ -28,25 +34,61 @@ class MeResponse(BaseModel):
     role: str
     email: str
 
+
+def _ensure_db_and_seed():
+    """Create tables (if missing) and insert seed users when not present.
+
+    This is intentionally simple for local/dev testing so the SQLite file
+    will contain default users which can be persisted by Docker volumes.
+    """
+    # Create tables if not already created
+    Base.metadata.create_all(bind=engine)
+
+    db = SessionLocal()
+    try:
+        for u in _SEED_USERS:
+            exists = db.query(User).filter(User.email == u["email"]).first()
+            if not exists:
+                user = User(name=u["name"], email=u["email"], role=u["role"])
+                db.add(user)
+        db.commit()
+    finally:
+        db.close()
+
+
+# Ensure seed users exist on import so the DB file is populated for tests
+_ensure_db_and_seed()
+
+
 @router.post("/login", response_model=LoginResponse)
 def login(data: LoginRequest):
-    user = SEED_USERS.get(data.email)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    # Return a fixed token for demo
-    return {
-        "access_token": f"demo-token-for-{user['role']}",
-        "role": user["role"],
-        "name": user["name"]
-    }
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.email == data.email).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        # Return a simple demo token based on role (keeps compatibility with frontend demo tokens)
+        return {"access_token": f"demo-token-for-{user.role}", "role": user.role, "name": user.name}
+    finally:
+        db.close()
 
-# Dependency to get current user from token (stub)
+
 def get_current_user(authorization: str | None = Header(default=None)):
     token = authorization or "demo-token-for-worker"
-    for email, user in SEED_USERS.items():
-        if token == f"demo-token-for-{user['role']}":
-            return {**user, "email": email}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if not token.startswith("demo-token-for-"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    role = token.replace("demo-token-for-", "")
+
+    db = SessionLocal()
+    try:
+        # Return the first active user with that role (sufficient for demo/testing)
+        user = db.query(User).filter(User.role == role, User.is_active == True).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token/user")
+        return {"id": user.id, "name": user.name, "role": user.role, "email": user.email}
+    finally:
+        db.close()
+
 
 @router.get("/me", response_model=MeResponse)
 def me(current_user: dict = Depends(get_current_user)):
