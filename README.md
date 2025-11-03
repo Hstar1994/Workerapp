@@ -7,7 +7,9 @@ A full-stack contracting worker scheduler application with FastAPI backend and R
 - **Frontend**: React + Vite served by Nginx on http://localhost:8080
 - **Backend**: FastAPI on http://localhost:8000
 - **Database**: SQLite with persistent Docker volume storage
-- **Authentication**: Demo token-based auth with seeded users
+- **Authentication**: User-specific token-based auth (demo-token-{user_id}-{role})
+- **User Management**: Full CRUD operations with activity logging
+- **Activity Logs**: Complete audit trail of all user operations
 
 ## 🏗️ Architecture
 
@@ -48,6 +50,10 @@ docker compose ps
 ### Access the Application
 
 - **Web UI**: http://localhost:8080
+  - **Login Page**: http://localhost:8080/login
+  - **Dashboard**: http://localhost:8080/dashboard
+  - **User Management** (Admin only): http://localhost:8080/user-management
+  - **Activity Logs** (Admin only): http://localhost:8080/activity-logs
 - **API Health Check**: http://localhost:8000/healthz
 - **API Docs**: http://localhost:8000/docs (FastAPI auto-generated)
 
@@ -408,6 +414,18 @@ For production, implement:
 - HTTPS/TLS encryption
 - Environment-based secrets management
 - Role-based access control (RBAC)
+
+
+## 🗒️ Notes
+
+### Seed User Logic (Development Only)
+
+- As of November 2025, the application seeds a set of default users (admin, manager, workers) into the database **only if the users table is empty**. This ensures a smooth local/dev experience and avoids conflicts with persistent data when using Docker volumes.
+- The seed logic is implemented in `services/api/app/routers/auth.py` and will **not overwrite or duplicate users** if the database already contains user records.
+- This change was made to resolve issues with user creation and editing in the admin UI when persistent storage is enabled.
+- **Future Plan:** The seed user logic is intended for development/testing only. For production or customer deployments, all seeded accounts will be removed. Instead, the first real user (the purchaser or admin) will be created during onboarding or initial setup, and all further accounts will be managed through the app's UI or API.
+
+---
 
 ## 📝 License
 

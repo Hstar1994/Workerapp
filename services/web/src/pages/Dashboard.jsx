@@ -185,21 +185,38 @@ export default function Dashboard() {
             <li>View all jobs and schedules</li>
             <li>Generate reports and analytics</li>
           </ul>
-          <button
-            style={{ 
-              backgroundColor: '#dc3545', 
-              color: 'white', 
-              padding: '10px 20px', 
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-            onClick={() => navigate('/user-management')}
-          >
-            Manage Users
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              style={{ 
+                backgroundColor: '#dc3545', 
+                color: 'white', 
+                padding: '10px 20px', 
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+              onClick={() => navigate('/user-management')}
+            >
+              Manage Users
+            </button>
+            <button
+              style={{ 
+                backgroundColor: '#6610f2', 
+                color: 'white', 
+                padding: '10px 20px', 
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+              onClick={() => navigate('/activity-logs')}
+            >
+              View Activity Logs
+            </button>
+          </div>
         </section>
       )}
 

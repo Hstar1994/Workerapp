@@ -6,6 +6,7 @@ import Login from './pages/auth/Login'
 import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
 import UserManagement from './pages/UserManagement'
+import ActivityLogs from './pages/ActivityLogs'
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('token')
@@ -26,6 +27,11 @@ function App() {
         <Route path="/user-management" element={
           <RequireAuth>
             <UserManagement />
+          </RequireAuth>
+        } />
+        <Route path="/activity-logs" element={
+          <RequireAuth>
+            <ActivityLogs />
           </RequireAuth>
         } />
         <Route path="/" element={<Home />} />

@@ -16,6 +16,19 @@ class User(Base):
     assignments = relationship('JobAssignment', back_populates='worker')
     expertise = relationship('WorkerExpertise', back_populates='worker')
 
+class ActivityLog(Base):
+    __tablename__ = 'activity_logs'
+    id = Column(Integer, primary_key=True, index=True)
+    action = Column(String, nullable=False)  # e.g., 'user_created', 'user_updated', 'user_deleted', 'worker_assigned', etc.
+    description = Column(Text, nullable=False)  # Human-readable description
+    performed_by = Column(Integer, ForeignKey('users.id'), nullable=True)  # Who performed the action
+    target_user = Column(Integer, ForeignKey('users.id'), nullable=True)  # User affected by the action
+    meta_data = Column(JSON, nullable=True)  # Additional data (old values, new values, etc.) - renamed from 'metadata' due to SQLAlchemy reserved word
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    # Relationships
+    performer = relationship('User', foreign_keys=[performed_by])
+    target = relationship('User', foreign_keys=[target_user])
+
 class Job(Base):
     __tablename__ = 'jobs'
     id = Column(Integer, primary_key=True, index=True)

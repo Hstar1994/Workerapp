@@ -48,12 +48,13 @@ def _ensure_db_and_seed():
 
     db = SessionLocal()
     try:
-        for u in _SEED_USERS:
-            exists = db.query(User).filter(User.email == u["email"]).first()
-            if not exists:
+        # Only insert seed users if the users table is empty
+        user_count = db.query(User).count()
+        if user_count == 0:
+            for u in _SEED_USERS:
                 user = User(name=u["name"], email=u["email"], role=u["role"])
                 db.add(user)
-        db.commit()
+            db.commit()
     finally:
         db.close()
 
