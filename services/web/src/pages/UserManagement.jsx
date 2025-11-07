@@ -9,7 +9,7 @@ const UserManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
     const [selectedUser, setSelectedUser] = useState(null);
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'worker', is_active: true });
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'worker', is_active: true, password: '' });
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
 
@@ -89,7 +89,7 @@ const UserManagement = () => {
 
     const openCreateModal = () => {
         setModalMode('create');
-        setFormData({ name: '', email: '', phone: '', role: 'worker', is_active: true });
+        setFormData({ name: '', email: '', phone: '', role: 'worker', is_active: true, password: '' });
         setShowModal(true);
     };
 
@@ -101,7 +101,8 @@ const UserManagement = () => {
             email: user.email,
             phone: user.phone || '',
             role: user.role,
-            is_active: user.is_active
+            is_active: user.is_active,
+            password: '' // Do not show password field when editing
         });
         setShowModal(true);
     };
@@ -109,7 +110,7 @@ const UserManagement = () => {
     const closeModal = () => {
         setShowModal(false);
         setSelectedUser(null);
-        setFormData({ name: '', email: '', phone: '', role: 'worker', is_active: true });
+        setFormData({ name: '', email: '', phone: '', role: 'worker', is_active: true, password: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -121,13 +122,22 @@ const UserManagement = () => {
         const method = modalMode === 'create' ? 'POST' : 'PUT';
 
         try {
+            // Only send password if creating a user and password is not empty
+            const payload = { ...formData };
+            if (modalMode !== 'create') {
+                delete payload.password;
+            } else if (!payload.password) {
+                alert('Password is required for new users.');
+                setSubmitting(false);
+                return;
+            }
             const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {
@@ -396,6 +406,17 @@ const UserManagement = () => {
                                 />
                             </div>
                             <div style={styles.formGroup}>
+                                <label style={styles.label}>Password{modalMode === 'create' ? ' *' : ' (leave blank to keep unchanged)'}</label>
+                                <input
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    style={styles.input}
+                                    required={modalMode === 'create'}
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
                                 <label style={styles.label}>Phone</label>
                                 <input
                                     type="text"
@@ -417,6 +438,19 @@ const UserManagement = () => {
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
+                            {/* Password field only for create mode */}
+                            {modalMode === 'create' && (
+                                <div style={styles.formGroup}>
+                                    <label style={styles.label}>Password *</label>
+                                    <input
+                                        type="password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        style={styles.input}
+                                        required
+                                    />
+                                </div>
+                            )}
                             <div style={styles.formGroup}>
                                 <label style={styles.checkboxLabel}>
                                     <input
@@ -516,46 +550,6 @@ const styles = {
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
         gap: '15px',
         marginBottom: '30px'
-    },
-    statCard: {
-        backgroundColor: '#f8f9fa',
-        padding: '20px',
-        borderRadius: '8px',
-        textAlign: 'center',
-        border: '1px solid #dee2e6'
-    },
-    statNumber: {
-        fontSize: '32px',
-        fontWeight: 'bold',
-        color: '#0d6efd',
-        marginBottom: '5px'
-    },
-    statLabel: {
-        fontSize: '14px',
-        color: '#6c757d',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-    },
-    tableContainer: {
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse'
-    },
-    th: {
-        backgroundColor: '#f8f9fa',
-        padding: '15px',
-        textAlign: 'left',
-        fontWeight: '600',
-        color: '#495057',
-        borderBottom: '2px solid #dee2e6',
-        fontSize: '14px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
     },
     tr: {
         borderBottom: '1px solid #dee2e6',

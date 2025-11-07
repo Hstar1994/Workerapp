@@ -10,6 +10,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     phone = Column(String, unique=True, nullable=True)
     role = Column(String, nullable=False)  # admin, manager, worker
+    password_hash = Column(String, nullable=True)  # Password hash for authentication
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # Relationships

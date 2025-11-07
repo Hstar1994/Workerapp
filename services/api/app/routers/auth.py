@@ -4,16 +4,21 @@ from typing import Optional
 
 from app.db import SessionLocal, engine, Base
 from app.models.models import User
+from app.utils.password import verify_password
 
 router = APIRouter()
 
 # Seed data we'll ensure exists in the DB for testing
+from app.utils.password import hash_password
+
+# Default password for all seed users (for dev/testing)
+_SEED_PASSWORD = "testpass"
 _SEED_USERS = [
-    {"email": "admin@example.com", "name": "Admin", "role": "admin"},
-    {"email": "manager@example.com", "name": "Manager", "role": "manager"},
-    {"email": "worker1@example.com", "name": "Worker One", "role": "worker"},
-    {"email": "worker2@example.com", "name": "Worker Two", "role": "worker"},
-    {"email": "worker3@example.com", "name": "Worker Three", "role": "worker"},
+    {"email": "admin@example.com", "name": "Admin", "role": "admin", "password": _SEED_PASSWORD},
+    {"email": "manager@example.com", "name": "Manager", "role": "manager", "password": _SEED_PASSWORD},
+    {"email": "worker1@example.com", "name": "Worker One", "role": "worker", "password": _SEED_PASSWORD},
+    {"email": "worker2@example.com", "name": "Worker Two", "role": "worker", "password": _SEED_PASSWORD},
+    {"email": "worker3@example.com", "name": "Worker Three", "role": "worker", "password": _SEED_PASSWORD},
 ]
 
 
@@ -52,7 +57,12 @@ def _ensure_db_and_seed():
         user_count = db.query(User).count()
         if user_count == 0:
             for u in _SEED_USERS:
-                user = User(name=u["name"], email=u["email"], role=u["role"])
+                user = User(
+                    name=u["name"],
+                    email=u["email"],
+                    role=u["role"],
+                    password_hash=hash_password(u["password"])
+                )
                 db.add(user)
             db.commit()
     finally:
@@ -68,7 +78,9 @@ def login(data: LoginRequest):
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.email == data.email).first()
-        if not user:
+        if not user or not user.password_hash:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        if not data.password or not verify_password(data.password, user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
         # Return a user-specific demo token that includes the user ID
         return {
